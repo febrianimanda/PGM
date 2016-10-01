@@ -120,6 +120,30 @@ class DAG:
 				return x
 		return None
 
+	def isTrail(self, nodeA, nodeB, visited = []):
+		print nodeA.getAlias(), nodeB.getAlias()
+		visited = visited[:] if len(visited) == 0 else visited
+		if nodeA not in visited:
+			visited.append(nodeA)
+			if nodeA.isHaveChild():
+				for x in nodeA.getChild():
+					print x.getAlias(), ' child'
+					if x == nodeB :
+						return True
+					else:
+						if self.isTrail(x, nodeB, visited) == True:
+							return True
+			elif nodeA.isHaveParent():
+				for x in nodeA.getParent():
+					print x.getAlias(), ' parent'
+					if x == nodeB:
+						return True
+					else:
+						if self.isTrail(x, nodeB, visited) == True:
+							return True
+		return False
+
+
 class Node:
 	'Common base class for Node in DAG'
 
@@ -189,8 +213,8 @@ D = Node('D', 'Wet Grass', [B,C])
 E = Node('E', 'Slippery Road', [C])
 
 A.addConnection([B,C])
-B.addConnection([D])
-C.addConnection([D])
+B.addConnection(D)
+C.addConnection(E)
 
 dag.addNode([A,B,C,D,E])
 dag.showAllNode()
