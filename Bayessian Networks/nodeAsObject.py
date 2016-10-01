@@ -35,19 +35,24 @@ example_dag = {
 class DAG:
 	'Common base class for Directed Acyclid Graph'
 
-	def __init__(self):
+	def __init__(self, listNode = []):
 		self._nodeCount = 0
-		self._listNode = []
+		self._listNode = listNode[:] if len(listNode) == 0 else listNode
 
 	def showNodeCounter(self):
 		print 'Total Nodes: %d' % self._nodeCount
 
 	def showAllNode(self):
-		print self._listNode
+		print "Node di dalam DAG : %s" % [x.getAlias() for x in self._listNode]
 
 	def addNode(self, node):
-		self._nodeCount += 1
-		self._listNode.append(node)
+		if isinstance(node, list):
+			for x in node:
+				self._nodeCount += 1
+				self._listNode.append(x)
+		else:
+				self._nodeCount += 1
+				self._listNode.append(node)
 
 class Node:
 	'Common base class for Node in DAG'
@@ -55,8 +60,8 @@ class Node:
 	def __init__(self, alias, desc, parent = [], child = []):
 		self._alias = alias
 		self._desc = desc
-		self._parent = parent
-		self._child = child
+		self._parent = child[:] if len(parent) == 0 else parent
+		self._child = child[:] if len(child) == 0 else parent
 		self._value = True
 
 	# def __str__(self):
@@ -111,6 +116,7 @@ class Node:
 		print [node.getAlias() for node in self._parent]
 
 
+dag = DAG()
 A = Node('A', 'Winter')
 B = Node('B', 'Sprinkler', [A])
 C = Node('C', 'Rain', [A])
@@ -118,11 +124,9 @@ D = Node('D', 'Wet Grass', [B,C])
 E = Node('E', 'Slippery Road', [C])
 
 A.addConnection([B,C])
-# B.addConnection(D)
-# C.addConnection([D,E])
-# D.addConnection([B,C], 'parent')
-# E.addConnection(C, 'parent')
-D.showParent()
+B.addConnection([D])
+C.addConnection([D])
 
-
+dag.addNode([A,B,C,D,E])
+dag.showAllNode()
 
