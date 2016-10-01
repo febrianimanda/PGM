@@ -1,36 +1,51 @@
 """Structure"""
-example_dag = {
-	'A' : {
-		'desc'		: 'Winter',
-		'parent'	: [],
-		'child'		: ['B','C'],
-		'value'		: True
+example_dag = [
+	{
+		'node' : {
+			'alias'	: 'A',
+			'desc'	: 'Winter',
+			'value'	: True
+		},
+		'parent' 	: [],
+		'child'		: ['B','C']
 	},
-	'B' : {
-		'desc' 	: 'Sprinkler',
+	{
+		'B' : {
+			'alias'	: 'B',
+			'desc' 	: 'Sprinkler',
+			'value'	: True
+		},
 		'parent'	:	['A'],
 		'child'		: ['D'],
-		'value'		: True
 	},
-	'C'	: {
-		'desc'		: 'Rain',
+	{
+		'C'	: {
+			'alias'	: 'C',
+			'desc'	: 'Rain',
+			'value'	: True
+		},
 		'parent'	: ['A'],
 		'child'		: ['D', 'E'],
-		'value'		: True
 	},
-	'D'	: {
-		'desc'		: 'Wet Grass',
+	{
+		'D'	: {
+			'alias'	: 'D',
+			'desc'	: 'Wet Grass',
+			'value'	: True
+		},
 		'parent'	: ['B', 'C'],
 		'child'		: [],
-		'value'		: True
 	},
-	'E' : {
-		'desc'		: 'Slippery Road',
+	{
+		'E' : {
+			'alias'	: 'E',
+			'desc'	: 'Slippery Road',
+			'value'	: True
+		},
 		'parent'	: ['C'],
 		'child'		: [],
-		'value'		: True
 	}
-}
+]
 
 example_CPT = [
 
@@ -73,16 +88,20 @@ class DAG:
 		print 'Total Nodes: %d' % self._nodeCount
 
 	def showAllNode(self):
-		print "Nodes in DAG : %s" % [x.getAlias() for x in self._listNode]
+		# print "Nodes in DAG : %s" % [x['node'].getAlias() for x in self._listNode]
+		for i in self._listNode:
+			print i
 
 	def addNode(self, node):
 		if isinstance(node, list):
 			for x in node:
+				obj = { 'node': x, 'parent': [], 'child': [] }
 				self._nodeCount += 1
-				self._listNode.append(x)
+				self._listNode.append(obj)
 		else:
+				obj = { 'node': node, 'parent': [], 'child': [] }
 				self._nodeCount += 1
-				self._listNode.append(node)
+				self._listNode.append(obj)
 
 	# with weaknes CPT name is not flexible
 	# def addCPT(self, node, givenNode, listValue):
@@ -94,6 +113,20 @@ class DAG:
 	# 		print "CPT successfully added"
 	# 	else:
 	# 		print "CPT seems not properly, please try again"
+
+	def addConnection(self, node, connection, status='child'):
+		islist = isinstance(connection, list)
+		if status == 'parent' :
+			if islist:
+				self.getNode(node)['parent'].extend(connection)
+			else:
+				self.getNode(node)['parent'].append(connection)
+		else:
+			if islist:
+				self.getNode(node)['child'].extend(connection)
+			else:
+				self.getNode(node)['child'].append(connection)
+		print "Node %s: Node %s sebagai %s berhasil dihubungkan " % (node, connection, status)
 
 	def addCPT(self, node, givenNode, listValue):
 		islist = isinstance(givenNode, list)
@@ -114,69 +147,50 @@ class DAG:
 	def getCPT(self, alias, given):
 		return [x for x in self._listCPT if x['node'] == alias and x['given'] == given]
 
-	def getNode(self, alias):
-		for x in self._listNode:
-			if x.getAlias() == alias :
-				return x
-		return None
-
 	def isTrail(self, nodeA, nodeB, visited = []):
-		print nodeA.getAlias(), nodeB.getAlias()
 		visited = visited[:] if len(visited) == 0 else visited
 		if nodeA not in visited:
 			visited.append(nodeA)
 			if nodeA.isHaveChild():
 				for x in nodeA.getChild():
-					print x.getAlias(), ' child'
 					if x == nodeB :
 						return True
 					else:
-						if self.isTrail(x, nodeB, visited) == True:
+						if self.isTrail(x, nodeB, visited):
 							return True
 			elif nodeA.isHaveParent():
 				for x in nodeA.getParent():
-					print x.getAlias(), ' parent'
 					if x == nodeB:
 						return True
 					else:
-						if self.isTrail(x, nodeB, visited) == True:
+						if self.isTrail(x, nodeB, visited):
 							return True
 		return False
 
+	def getNode(self, alias):
+		for x in self._listNode:
+			if x['node'] == alias :
+				return x
+		return None
+
+	def getChild(self, node):
+		for i in self._listNode:
+			print i
+		return [i['child'] for i in self._listNode if i['node'] == node]
 
 class Node:
 	'Common base class for Node in DAG'
 
-	def __init__(self, alias, desc, parent = [], child = []):
+	def __init__(self, alias, desc):
 		self._alias = alias
 		self._desc = desc
-		self._parent = child[:] if len(parent) == 0 else parent
-		self._child = child[:] if len(child) == 0 else parent
 		self._value = True
 
-	# def __str__(self):
-	# 	return str(self._alias)
+	def __str__(self):
+		return self._alias
 
-	# def __repr__(self):
-	# 	return str(self._alias)
-
-	def addConnection(self, connection, status='child'):
-		islist = (isinstance(connection, list))
-		if status == 'parent' :
-			if islist:
-				self._parent.extend(connection)
-			else:
-				self._parent.append(connection)
-		else:
-			if islist:
-				self._child.extend(connection)
-			else:
-				self._child.append(connection)
-		if islist:
-			print "Node %s: Node %s sebagai %s berhasil dihubungkan " % (self._alias, [x.getAlias() for x in connection], status)
-		else:
-			print "Node %s: Node %s sebagai %s berhasil dihubungkan " % (self._alias, connection.getAlias(), status)
-		# print "Node %s sebagai %s berhasil dihubungkan " % (connection, status)
+	def __repr__(self):
+		return self._alias
 		
 	def setValue(self, value):
 		self._value = value
@@ -206,19 +220,25 @@ class Node:
 		print [node.getAlias() for node in self._parent]
 
 dag = DAG()
-A = Node('A', 'Winter')
-B = Node('B', 'Sprinkler', [A])
-C = Node('C', 'Rain', [A])
-D = Node('D', 'Wet Grass', [B,C])
-E = Node('E', 'Slippery Road', [C])
+a = Node('A', 'Winter')
+b = Node('B', 'Sprinkler')
+c = Node('C', 'Rain')
+d = Node('D', 'Wet Grass')
+e = Node('E', 'Slippery Road')
 
-A.addConnection([B,C])
-B.addConnection(D)
-C.addConnection(E)
-
-dag.addNode([A,B,C,D,E])
+dag.addNode([a,b,c,d,e])
 dag.showAllNode()
-dag.addCPT(B,A,[.2, .8, .75, .25])
-dag.addCPT(E,C,[.7, .3, 0, 1])
-dag.addCPT(C,A,[.8, .2, .1, .9])
-dag.addCPT(D,[B,C],[.95, .05, .9, .1, .8, .2, 0, 1])
+dag.addConnection(a,[b,c])
+dag.addConnection(b,a,'parent')
+dag.addConnection(b,d)
+dag.addConnection(c,a,'parent')
+dag.addConnection(c,d)
+dag.addConnection(d,[b,c],'parent')
+dag.addConnection(c,e)
+dag.addConnection(e,c,'parent')
+dag.showAllNode()
+
+# dag.addCPT(B,A,[.2, .8, .75, .25])
+# dag.addCPT(E,C,[.7, .3, 0, 1])
+# dag.addCPT(C,A,[.8, .2, .1, .9])
+# dag.addCPT(D,[B,C],[.95, .05, .9, .1, .8, .2, 0, 1])
