@@ -185,6 +185,24 @@ class DAG:
 		for x in self._listCPT:
 			print x
 
+	def encodes(self, fd):
+		for i in fd:
+			if isinstance(i, list):
+				if self.getNode(i[0]) == None:
+					self.addNode(i[0])
+				if isinstance(i[1], list):
+					for j in i[1]:
+						if self.getNode(j) == None:
+							self.addNode(j)
+						self.addConnection(j, i[0])
+				else:
+					if self.getNode(i[1]) == None:
+						self.addNode(i[0])
+					self.addConnection(i[1], i[0])
+				self.addConnection(i[0],i[1], 'parent')
+			else:
+				self.addNode(i)
+
 class Node:
 	'Common base class for Node in DAG'
 
@@ -216,20 +234,10 @@ c = Node('C', 'Rain')
 d = Node('D', 'Wet Grass')
 e = Node('E', 'Slippery Road')
 
-dag.addNode([a,b,c,d,e])
-dag.addConnection(a,[b,c])
-dag.addConnection(b,a,'parent')
-dag.addConnection(b,d)
-dag.addConnection(c,a,'parent')
-dag.addConnection(c,d)
-dag.addConnection(d,[b,c],'parent')
-dag.addConnection(c,e)
-dag.addConnection(e,c,'parent')
+enc = [a,[b,a],[c,a],[d,[b,c]],[e,c]]
+dag.encodes(enc)
 dag.showAllNode()
-dag.showFromNode(a, 'child')
 dag.addCPT(b,a,[.2, .8, .75, .25])
 dag.addCPT(e,c,[.7, .3, 0, 1])
 dag.addCPT(c,a,[.8, .2, .1, .9])
 dag.addCPT(d,[b,c],[.95, .05, .9, .1, .8, .2, 0, 1])
-dag.showAllCPT()
-print dag.isTrail(d,e)
