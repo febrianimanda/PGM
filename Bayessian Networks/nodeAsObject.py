@@ -173,10 +173,27 @@ class DAG:
 				return x
 		return None
 
-	def getChild(self, node):
-		for i in self._listNode:
-			print i
-		return [i['child'] for i in self._listNode if i['node'] == node]
+	def getFromNode(self, node, things = 'child'):
+		obj = self.getNode(node)
+		if obj != None:
+			return obj[things]
+		return None
+
+	def isNodeHave(self, node, things='child'):
+		obj = self.getNode(node)
+		if obj != None:
+			return len(obj[things]) != 0
+		return False
+
+	def isHaveParent(self):
+		return len(self._parent) != 0
+
+	def showFromNode(self, node, things):
+		obj = self.getNode(node)
+		if obj != None:
+			print 'Child Node %s : %s' % (node, obj[things])
+		else:
+			print 'Node tidak ditemukan'
 
 class Node:
 	'Common base class for Node in DAG'
@@ -201,23 +218,6 @@ class Node:
 	def getDesc(self):
 		return self._desc
 
-	def getParent(self):
-		return self._parent
-
-	def getChild(self):
-		return self._child	
-
-	def isHaveChild(self):
-		return len(self._child) != 0
-
-	def isHaveParent(self):
-		return len(self._parent) != 0
-
-	def showChild(self):
-		print [node.getAlias() for node in self._child]
-
-	def showParent(self):
-		print [node.getAlias() for node in self._parent]
 
 dag = DAG()
 a = Node('A', 'Winter')
@@ -227,7 +227,6 @@ d = Node('D', 'Wet Grass')
 e = Node('E', 'Slippery Road')
 
 dag.addNode([a,b,c,d,e])
-dag.showAllNode()
 dag.addConnection(a,[b,c])
 dag.addConnection(b,a,'parent')
 dag.addConnection(b,d)
@@ -237,6 +236,7 @@ dag.addConnection(d,[b,c],'parent')
 dag.addConnection(c,e)
 dag.addConnection(e,c,'parent')
 dag.showAllNode()
+dag.showFromNode(a, 'child')
 
 # dag.addCPT(B,A,[.2, .8, .75, .25])
 # dag.addCPT(E,C,[.7, .3, 0, 1])
